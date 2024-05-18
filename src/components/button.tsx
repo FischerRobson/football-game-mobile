@@ -3,10 +3,10 @@ import { twMerge } from 'tailwind-merge'
 
 const VARIANTS = {
   primary: {
-    bgColor: 'bg-emerald-700',
+    bgColor: 'bg-emerald-600',
   },
   secondary: {
-    bgColor: 'bg-sky-600',
+    bgColor: 'bg-red-500',
   },
 }
 
