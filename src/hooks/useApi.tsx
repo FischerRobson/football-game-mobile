@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ApiRoutes } from '../constants/apiRoutes'
 import { api } from '../lib/api'
 
@@ -7,62 +7,59 @@ import { api } from '../lib/api'
 export function useApi() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [data, setData] = useState(null)
 
-  async function get<T>(
-    url: ApiRoutes,
-  ): Promise<{ data: T | null; error: string | null; isLoading: boolean }> {
+  const get = useCallback(async <T,>(url: ApiRoutes): Promise<{ data: T }> => {
     setIsLoading(true)
-    setData(null)
     setError(null)
 
-    return await api
-      .get(String(url))
-      .then((res) => {
-        const { data } = res
-        setData(data as T)
-        return { data: data as T, error: null, isLoading: false }
-      })
-      .catch((err) => {
-        setError(err)
-        return {
-          data: null,
-          error: err.message || 'An error occurred',
-          isLoading: false,
-        }
-      })
-      .finally(() => {
+    await delay(1)
+
+    try {
+      const response = await api.get(url)
+      const { data } = response
+      setIsLoading(false)
+      return { data }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMessage)
+      setIsLoading(false)
+      console.error(errorMessage)
+      return { data: null }
+    }
+  }, [])
+
+  const post = useCallback(
+    async <T,>(url: string, body: object): Promise<{ data: T }> => {
+      setIsLoading(true)
+      setError(null)
+
+      await delay(3)
+
+      try {
+        const response = await api.post(url, body)
+        const { data } = response
         setIsLoading(false)
-      })
-  }
-
-  async function post<T>(
-    url: ApiRoutes,
-    body: object,
-  ): Promise<{ data: T | null; error: string | null; isLoading: boolean }> {
-    setIsLoading(true)
-    setData(null)
-    setError(null)
-
-    return await api
-      .post(String(url), body)
-      .then((res) => {
-        const { data } = res
-        setData(data as T)
-        return { data: data as T, error: null, isLoading: false }
-      })
-      .catch((err) => {
-        setError(err)
-        return {
-          data: null,
-          error: err.message || 'An error occurred',
-          isLoading: false,
-        }
-      })
-      .finally(() => {
+        return { data }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred'
+        setError(errorMessage)
         setIsLoading(false)
-      })
-  }
+        console.error(errorMessage)
+        return { data: null }
+      }
+    },
+    [],
+  )
 
-  return { get, post, data, isLoading, error }
+  return { get, post, isLoading, error }
+}
+
+function delay(seconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, seconds * 1000)
+  })
 }

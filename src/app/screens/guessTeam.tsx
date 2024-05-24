@@ -6,6 +6,8 @@ import { GoBack } from '../../components/goBack'
 import { Button } from '../../components/button'
 import { Spinner } from '../../components/spinner'
 import { API_ROUTES } from '../../constants/apiRoutes'
+import { useApi } from '../../hooks/useApi'
+import { Skeleton } from '../../components/skeleton'
 
 interface GuessTeamGame {
   gameId: string
@@ -14,29 +16,23 @@ interface GuessTeamGame {
 
 export function GuessTeam() {
   const [game, setGame] = useState<GuessTeamGame | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [teamName, setTeamName] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [currentScore, setCurrentScore] = useState(0)
+  const [wrongAttempt, setWrongAttempt] = useState(false)
 
-  console.log('render')
+  const { get, post, isLoading } = useApi()
 
-  const createNewGame = useCallback(() => {
+  console.log(isLoading)
+  console.log(game)
+
+  const createNewGame = useCallback(async () => {
+    setGame(null)
     setTeamName('')
-    setIsLoading(true)
+    setWrongAttempt(false)
 
-    api
-      .get(API_ROUTES.NEW_GUESS_TEAM)
-      .then((res) => {
-        setGame(res.data)
-        setError(null)
-      })
-      .catch((e) => {
-        console.error(e)
-        setError('Something went wrong, try again please')
-      })
-      .finally(() => setIsLoading(false))
-  }, [])
+    const { data } = await get(API_ROUTES.NEW_GUESS_TEAM)
+    setGame(data as GuessTeamGame)
+  }, [get])
 
   const skipGame = useCallback(() => {
     setCurrentScore(0)
@@ -46,23 +42,17 @@ export function GuessTeam() {
   async function sendResponse() {
     if (game === null || !teamName) return
 
-    api
-      .post(API_ROUTES.PLAY_GUESS_TEAM, {
-        gameId: game.gameId,
-        answer: teamName,
-      })
-      .then((resp) => {
-        if (resp.data === 'Correct answer') {
-          createNewGame()
-          setCurrentScore((prev) => prev + 1)
-        } else {
-          setError('Wrong answer')
-        }
-      })
-      .catch((err) => {
-        console.error(err)
-        setError('Something went wrong, try again please')
-      })
+    const { data } = await post<string>(API_ROUTES.PLAY_GUESS_TEAM, {
+      gameId: game.gameId,
+      answer: teamName,
+    })
+
+    if (data === 'Correct answer') {
+      createNewGame()
+      setCurrentScore((prev) => prev + 1)
+    } else {
+      setWrongAttempt(true)
+    }
   }
 
   useEffect(() => {
@@ -78,47 +68,51 @@ export function GuessTeam() {
       <Text className="text-zinc-700 text-lg">
         Guess which team these two players have played:
       </Text>
-      {game && (
-        <View className="w-full px-2 items-center justify-center">
-          <View className="flex-col gap-4 mt-2 items-center justify-center">
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              <>
-                <Text className="text-lg font-semibold">
-                  {game.playersNames[0]}
-                </Text>
-                <Text className="text-lg font-semibold">
-                  {game.playersNames[1]}
-                </Text>
-              </>
-            )}
-          </View>
 
-          <View className="mt-5 w-full justify-center">
-            <Text className="text-center">Team name:</Text>
-            <TextInput
-              value={teamName}
-              onChangeText={setTeamName}
-              className="bg-zinc-200 h-8 rounded-md text-center mt-1 font-semibold"
-            />
-            <Text className="mt-3 text-red-400">{error}</Text>
-          </View>
-
-          <View className="flex-row mt-4">
-            <Button
-              variant="secondary"
-              styles="w-40 mr-1"
-              onPress={() => skipGame()}
-            >
-              Skip
-            </Button>
-            <Button styles="w-40 ml-1" onPress={() => sendResponse()}>
-              Submit
-            </Button>
-          </View>
+      <View className="w-full px-2 items-center justify-center">
+        <View className="flex-col mt-2 items-center justify-center">
+          {isLoading ? (
+            <>
+              <Skeleton.Paragraph />
+              <Skeleton.Paragraph />
+            </>
+          ) : (
+            <>
+              <Text className="text-lg font-semibold">
+                {game?.playersNames[0]}
+              </Text>
+              <Text className="text-lg font-semibold">
+                {game?.playersNames[1]}
+              </Text>
+            </>
+          )}
         </View>
-      )}
+
+        <View className="mt-5 w-full justify-center">
+          <Text className="text-center">Team name:</Text>
+          <TextInput
+            value={teamName}
+            onChangeText={setTeamName}
+            className="bg-zinc-200 h-8 rounded-md text-center mt-1 font-semibold"
+          />
+          {wrongAttempt && (
+            <Text className="mt-3 text-red-400">Wrong attempt</Text>
+          )}
+        </View>
+
+        <View className="flex-row mt-4">
+          <Button
+            variant="secondary"
+            styles="w-40 mr-1"
+            onPress={() => skipGame()}
+          >
+            Skip
+          </Button>
+          <Button styles="w-40 ml-1" onPress={() => sendResponse()}>
+            Submit
+          </Button>
+        </View>
+      </View>
     </View>
   )
 }
