@@ -2,6 +2,7 @@ import { View, Text } from 'react-native'
 import { Button } from '../../components/button'
 import { useNavigation } from '@react-navigation/native'
 import { GoBack } from '../../components/goBack'
+import { SCREENS } from '../../constants/screens'
 
 export function GameModes() {
   const { navigate } = useNavigation()
@@ -13,8 +14,10 @@ export function GameModes() {
         <Text className="text-zinc-950 font-bold text-2xl">
           Select Game Mode
         </Text>
-        <Button onPress={() => navigate('GuessTeam')}>Guess Team</Button>
-        <Button>Find Intruder</Button>
+        <Button onPress={() => navigate(SCREENS.GUESS_TEAM)}>Guess Team</Button>
+        <Button onPress={() => navigate(SCREENS.FIND_INTRUDER)}>
+          Find Intruder
+        </Button>
       </View>
     </View>
   )

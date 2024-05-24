@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { HomeScreen } from '../../app/screens'
 import { GameModes } from '../../app/screens/gameModes'
 import { GuessTeam } from '../../app/screens/guessTeam'
+import { SCREENS } from '../../constants/screens'
+import { FindIntruder } from '../../app/screens/findIntruder'
 
 export function MainNavigationStack() {
   const Stack = createNativeStackNavigator()
@@ -12,18 +14,23 @@ export function MainNavigationStack() {
     <NavigationContainer theme={DefaultTheme}>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen
-          name="Home"
+          name={SCREENS.HOME}
           component={HomeScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="GameModes"
+          name={SCREENS.GAME_MODES}
           component={GameModes}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="GuessTeam"
+          name={SCREENS.GUESS_TEAM}
           component={GuessTeam}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={SCREENS.FIND_INTRUDER}
+          component={FindIntruder}
           options={{ headerShown: false }}
         />
         {/* Add other screens here */}

@@ -19,6 +19,8 @@ export function GuessTeam() {
   const [error, setError] = useState<string | null>(null)
   const [currentScore, setCurrentScore] = useState(0)
 
+  console.log('render')
+
   const createNewGame = useCallback(() => {
     setTeamName('')
     setIsLoading(true)
