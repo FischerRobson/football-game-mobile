@@ -13,11 +13,13 @@ const VARIANTS = {
 interface ButtonProps extends TouchableOpacityProps {
   styles?: string
   variant?: keyof typeof VARIANTS
+  disabled?: boolean
 }
 
 export function Button({
   children,
   variant = 'primary',
+  disabled = false,
   styles,
   onPress,
   ...props
@@ -26,10 +28,11 @@ export function Button({
     <TouchableOpacity
       className={twMerge(
         styles,
-        `${VARIANTS[variant].bgColor} px-10 py-2 rounded-md flex items-center justify-center`,
+        `${VARIANTS[variant].bgColor} px-10 py-2 rounded-md flex items-center justify-center ${disabled ? 'opacity-70' : ''}`,
       )}
       activeOpacity={0.7}
       onPress={onPress}
+      disabled={disabled}
       {...props}
     >
       <Text className="font-semibold text-zinc-200 text-lg ">{children}</Text>

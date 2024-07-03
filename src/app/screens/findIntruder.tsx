@@ -4,6 +4,7 @@ import { GoBack } from '../../components/goBack'
 import { api } from '../../lib/api'
 import { API_ROUTES } from '../../constants/apiRoutes'
 import { Button } from '../../components/button'
+import { useApi } from '../../hooks/useApi'
 
 type FindIntruderGame = {
   gameId: string
@@ -12,19 +13,24 @@ type FindIntruderGame = {
 
 export function FindIntruder() {
   const [game, setGame] = useState<FindIntruderGame | null>(null)
-  const [error, setError] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
 
-  const createNewGame = useCallback(() => {
-    api
-      .get(API_ROUTES.NEW_FIND_INTRUDER)
-      .then((res) => {
-        const { data } = res
-        console.log(data)
-        setGame(data)
-      })
-      .catch((err) => console.error(err))
-  }, [])
+  const { get, post, isLoading, error } = useApi()
+
+  const createNewGame = useCallback(async () => {
+    const { data } = await get<FindIntruderGame>(API_ROUTES.NEW_FIND_INTRUDER)
+    setGame(data)
+  }, [get])
+
+  async function play(selectedPlayer: string) {
+    const { data } = await post(API_ROUTES.PLAY_FIND_INTRUDER, {
+      gameId: game.gameId,
+      answer: selectedPlayer,
+    })
+
+    if (data === 'Correct answer') {
+      createNewGame()
+    }
+  }
 
   useEffect(() => {
     createNewGame()
@@ -38,7 +44,11 @@ export function FindIntruder() {
       </Text>
       <View className="gap-2">
         {game?.playersNames.map((p) => {
-          return <Button key={p}>{p}</Button>
+          return (
+            <Button onPress={() => play(p)} key={p}>
+              {p}
+            </Button>
+          )
         })}
       </View>
     </View>

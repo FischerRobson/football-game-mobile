@@ -22,16 +22,13 @@ export function GuessTeam() {
 
   const { get, post, isLoading } = useApi()
 
-  console.log(isLoading)
-  console.log(game)
-
   const createNewGame = useCallback(async () => {
     setGame(null)
     setTeamName('')
     setWrongAttempt(false)
 
-    const { data } = await get(API_ROUTES.NEW_GUESS_TEAM)
-    setGame(data as GuessTeamGame)
+    const { data } = await get<GuessTeamGame>(API_ROUTES.NEW_GUESS_TEAM)
+    setGame(data)
   }, [get])
 
   const skipGame = useCallback(() => {
@@ -71,7 +68,7 @@ export function GuessTeam() {
 
       <View className="w-full px-2 items-center justify-center">
         <View className="flex-col mt-2 items-center justify-center">
-          {isLoading ? (
+          {isLoading && !game ? (
             <>
               <Skeleton.Paragraph />
               <Skeleton.Paragraph />
@@ -105,10 +102,15 @@ export function GuessTeam() {
             variant="secondary"
             styles="w-40 mr-1"
             onPress={() => skipGame()}
+            disabled={isLoading}
           >
             Skip
           </Button>
-          <Button styles="w-40 ml-1" onPress={() => sendResponse()}>
+          <Button
+            styles="w-40 ml-1"
+            onPress={() => sendResponse()}
+            disabled={isLoading}
+          >
             Submit
           </Button>
         </View>

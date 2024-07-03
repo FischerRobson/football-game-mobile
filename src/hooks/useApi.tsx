@@ -34,7 +34,7 @@ export function useApi() {
       setIsLoading(true)
       setError(null)
 
-      await delay(3)
+      // await delay(3)
 
       try {
         const response = await api.post(url, body)
